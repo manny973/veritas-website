@@ -1,6 +1,6 @@
 # Veritas Cyber Security — Website
 
-A complete, static marketing website. **No build step, no frameworks, no database, no server-side code.** It's plain HTML, one CSS file, and one JavaScript file — it will run on any standard web host.
+A complete marketing website. The pages are plain **HTML + one CSS file + one JavaScript file** — no build step, no frameworks. The contact form uses a single small **PHP** file (`contact.php`) to send leads through your mail server's SMTP relay. It runs on any standard PHP-capable web host (Hostinger Web Hosting included).
 
 ---
 
@@ -14,6 +14,7 @@ veritas-website/
 ├── industries.html   → Industries We Serve
 ├── contact.html      → Contact / lead form
 ├── privacy.html      → Privacy Policy
+├── contact.php       → Server-side form handler (sends via SMTP relay)
 ├── styles.css        → All styling (shared by every page)
 ├── script.js         → All interactivity (shared by every page)
 ├── assets/
@@ -54,11 +55,45 @@ The domain is currently with **Wix**. To switch it to Hostinger, in hPanel → *
 
 ---
 
-## 3. The contact form
+## 3. The contact form (server-side — sends via SMTP relay)
 
-The "Request a consult" form on **contact.html** is wired to open the visitor's email client with a pre-filled message addressed to **info@veritascybersec.com** (subject + all fields included). It requires no backend.
+The "Request a consult" form on **contact.html** submits over AJAX (no page reload) to **`contact.php`**, which validates the data server-side and sends it to **info@veritascybersec.com** through an **authenticated SMTP relay**. The lead lands in the inbox whether or not the visitor has an email client installed. On success the visitor sees a "Request received" confirmation; if the server is ever unreachable, the form shows an inline fallback (direct email link + phone) so a lead is never lost.
 
-**Optional upgrade:** if you'd prefer submissions to arrive automatically without opening the visitor's mail client, connect the form to a form-handling service (e.g. Formspree, Web3Forms, or Hostinger's form/email setup). The handler lives in `script.js` under the `#lead-form` submit listener — swap the `mailto:` action for a `fetch()` POST to your endpoint.
+> **This requires PHP**, which Hostinger Web Hosting provides by default. The form will NOT send on a pure static host (Netlify/Cloudflare Pages/S3) without adapting the endpoint — see "Non-PHP hosts" below.
+
+### 3a. One-time setup (do this on the server)
+
+**Step 1 — Create a sending mailbox.**
+In Hostinger → **Emails → Email Accounts**, create a mailbox such as `noreply@veritascybersec.com` (or use an existing one). Note its **password**. Using a real mailbox on your own domain as the "From" address is what makes messages pass SPF/DKIM and land in the inbox rather than spam. The visitor's address is set as **Reply-To**, so hitting "reply" answers the lead directly.
+
+**Step 2 — Fill in SMTP credentials in `contact.php`.**
+Open `contact.php` and edit the `$CONFIG` block at the top:
+```php
+'to'          => 'info@veritascybersec.com',   // where leads are delivered
+'from'        => 'noreply@veritascybersec.com', // a real mailbox on your domain
+'smtp_host'   => 'smtp.hostinger.com',
+'smtp_user'   => 'noreply@veritascybersec.com', // full mailbox address
+'smtp_pass'   => 'PUT-MAILBOX-PASSWORD-HERE',    // <-- set this
+'smtp_port'   => 465,                            // 465 = SSL (recommended)
+'smtp_secure' => 'ssl',                          // 'ssl' for 465, 'tls' for 587
+```
+(Confirm the exact SMTP host/port for the account under Hostinger → **Emails → … → Connect Devices / Configure Mail Client**.)
+
+**Step 3 — Add the PHPMailer library** (gives you authenticated SMTP; strongly recommended).
+- **Easiest (Composer):** in the site folder run `composer require phpmailer/phpmailer`. This creates a `vendor/` folder — upload it alongside `contact.php`. Done.
+- **No Composer:** download PHPMailer from https://github.com/PHPMailer/PHPMailer, and upload its `src/` folder to `public_html/PHPMailer/src/` (so `PHPMailer/src/PHPMailer.php` exists). `contact.php` auto-detects either location.
+- **Fallback:** if neither is present, `contact.php` automatically falls back to PHP's built-in `mail()`. It often works on Hostinger, but authenticated SMTP (above) is more reliable and has better deliverability — set it up if you can.
+
+**Step 4 — Test.** Submit the form on the live site and confirm the email arrives at `info@veritascybersec.com`. If it doesn't: double-check the mailbox password, try port `587` with `'smtp_secure' => 'tls'`, and make sure `info@` isn't filtering it to spam.
+
+### 3b. Files involved
+- `contact.php` — the handler (edit the `$CONFIG` block).
+- `contact.html` — the form posts to `contact.php` (see the `action="contact.php"` attribute).
+- `script.js` — handles the AJAX submit, loading spinner, success + fallback states (the `#lead-form` block).
+- A hidden "honeypot" field silently blocks spam bots — leave it as-is.
+
+### 3c. Non-PHP hosts
+If you ever move to a static-only host, point the form at a hosted form service instead: change `action="contact.php"` in `contact.html` to your endpoint URL (e.g. Formspree / Web3Forms). The existing JS already POSTs the form data and expects a JSON `{ "ok": true }` response, so most services work with no other changes.
 
 ---
 

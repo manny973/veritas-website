@@ -992,6 +992,23 @@ html.r .reveal.in{ opacity:1; transform:none; }
 .form-success p{ color:var(--text-2); max-width:42ch; margin:0 auto; font-size:15px; }
 .form-success a{ color:var(--gold); }
 
+/* honeypot — visually hidden, still in DOM for bots */
+.hp-field{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+
+/* submit button loading state */
+.btn-spinner{ display:none; width:17px; height:17px; border-radius:50%; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; animation:spin .7s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+.btn.is-loading .btn-label{ opacity:.75; }
+.btn.is-loading .btn-arrow{ display:none; }
+.btn.is-loading .btn-spinner{ display:inline-block; }
+.btn.is-loading{ pointer-events:none; }
+
+/* inline error / fallback message */
+.form-error{ display:none; align-items:flex-start; gap:12px; margin-top:16px; padding:15px 17px; border:1px solid rgba(224,30,55,.4); background:rgba(224,30,55,.08); border-radius:11px; font-size:14px; color:var(--text-2); line-height:1.5; }
+.form-error.show{ display:flex; animation:fadeUp .35s var(--ease); }
+.form-error .fe-ico{ flex:none; width:22px; height:22px; border-radius:50%; background:var(--red); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:13px; }
+.form-error a{ color:var(--gold); }
+
 @media (max-width:900px){
   .contact-grid{ grid-template-columns:1fr; gap:40px; }
   .contact-hero{ padding:120px 0 70px; }

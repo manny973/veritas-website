@@ -121,34 +121,72 @@
         if(firstBad) firstBad.focus();
         return;
       }
-      // build mailto
+
       var get = function(n){ var el = form.querySelector('[name="'+n+'"]'); return el ? el.value.trim() : ''; };
-      var name = get('name'), email = get('email'), company = get('company'),
-          phone = get('phone'), service = get('service'), size = get('size'), msg = get('message');
-      var subject = 'New inquiry — ' + (company || name || 'Website');
-      var bodyLines = [
-        'Name: ' + name,
-        'Company: ' + company,
-        'Email: ' + email,
-        'Phone: ' + phone,
-        'Company size: ' + size,
-        'Service of interest: ' + service,
-        '',
-        'Message:',
-        msg,
-        '',
-        '— Sent from veritascybersec.com contact form'
-      ];
-      var href = 'mailto:info@veritascybersec.com?subject=' + encodeURIComponent(subject) +
-                 '&body=' + encodeURIComponent(bodyLines.join('\n'));
-      // success state
-      var success = document.querySelector('#form-success');
-      if(success){
-        form.style.display = 'none';
-        success.classList.add('show');
-        success.scrollIntoView ? null : null;
+      var submitBtn = form.querySelector('[type="submit"]');
+      var errorBox  = document.querySelector('#form-error');
+      var success   = document.querySelector('#form-success');
+
+      // honeypot: if a bot filled the hidden field, silently "succeed"
+      if(get('company_website')){
+        if(success){ form.style.display='none'; success.classList.add('show'); }
+        return;
       }
-      window.location.href = href;
+
+      function showError(msg){
+        if(errorBox){
+          errorBox.querySelector('.fe-msg').innerHTML = msg;
+          errorBox.classList.add('show');
+        }
+      }
+      function buildMailto(){
+        var subject = 'New inquiry — ' + (get('company') || get('name') || 'Website');
+        var body = [
+          'Name: ' + get('name'),
+          'Company: ' + get('company'),
+          'Email: ' + get('email'),
+          'Phone: ' + get('phone'),
+          'Company size: ' + get('size'),
+          'Service of interest: ' + get('service'),
+          '', 'Message:', get('message')
+        ].join('\n');
+        return 'mailto:info@veritascybersec.com?subject=' + encodeURIComponent(subject) +
+               '&body=' + encodeURIComponent(body);
+      }
+
+      if(errorBox) errorBox.classList.remove('show');
+      if(submitBtn){ submitBtn.classList.add('is-loading'); submitBtn.disabled = true; }
+
+      var endpoint = form.getAttribute('action') || 'contact.php';
+      var data = new FormData(form);
+
+      fetch(endpoint, {
+        method: 'POST',
+        body: data,
+        headers: { 'Accept': 'application/json' }
+      })
+      .then(function(res){
+        return res.json().catch(function(){ throw new Error('bad-json'); })
+          .then(function(json){ return { ok: res.ok && json && json.ok, json: json }; });
+      })
+      .then(function(result){
+        if(result.ok){
+          if(success){
+            form.style.display = 'none';
+            success.classList.add('show');
+          }
+        } else {
+          throw new Error((result.json && result.json.error) || 'send-failed');
+        }
+      })
+      .catch(function(){
+        // Server unreachable or misconfigured — don't lose the lead.
+        if(submitBtn){ submitBtn.classList.remove('is-loading'); submitBtn.disabled = false; }
+        showError('We couldn\'t send that automatically. Please email us at ' +
+          '<a href="mailto:info@veritascybersec.com">info@veritascybersec.com</a> ' +
+          'or <a href="' + buildMailto() + '">click here to open a pre-filled email</a>. ' +
+          'You can also call <a href="tel:+18132791957">813.279.1957</a>.');
+      });
     });
   }
 
