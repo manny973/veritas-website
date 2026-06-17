@@ -6,7 +6,11 @@
    Returns JSON: {"ok":true} or {"ok":false,"error":"..."}.
    ============================================================ */
 
-/* -------- 1. CONFIG — EDIT THESE VALUES -------- */
+/* -------- 1. CONFIG --------
+   Defaults live here; SECRETS live in config.secret.php (which is git-ignored,
+   so deploys/pushes can NEVER overwrite your live credentials).
+   On first deploy: copy config.secret.example.php → config.secret.php on the
+   server and fill in your SMTP password. After that, push freely forever. */
 $CONFIG = [
     // Where leads are delivered:
     'to'          => 'info@veritascybersec.com',
@@ -18,13 +22,22 @@ $CONFIG = [
     'from'        => 'noreply@veritascybersec.com',
     'from_name'   => 'Veritas Website',
 
-    // SMTP relay credentials (Hostinger → Emails → Email Accounts → Connect Devices / SMTP):
+    // SMTP relay credentials — overridden by config.secret.php on the server.
     'smtp_host'   => 'smtp.hostinger.com',
     'smtp_user'   => 'noreply@veritascybersec.com', // the full mailbox address
-    'smtp_pass'   => 'PUT-MAILBOX-PASSWORD-HERE',     // the mailbox password
+    'smtp_pass'   => '',                              // set in config.secret.php
     'smtp_port'   => 465,                              // 465 = SSL, 587 = STARTTLS
     'smtp_secure' => 'ssl',                            // 'ssl' for 465, 'tls' for 587
 ];
+
+// Merge in server-only secrets if present (never committed to git).
+$secretFile = __DIR__ . '/config.secret.php';
+if (file_exists($secretFile)) {
+    $secret = include $secretFile;
+    if (is_array($secret)) {
+        $CONFIG = array_merge($CONFIG, $secret);
+    }
+}
 
 /* -------- 2. Only accept POST -------- */
 header('Content-Type: application/json; charset=utf-8');

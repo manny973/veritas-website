@@ -6,7 +6,6 @@
 <title>Veritas Cyber Security — Executive Security Leadership for Growing Businesses</title>
 <meta name="description" content="Veritas delivers virtual CISO (vCISO) leadership, risk assessments, compliance, and cyber insurance readiness for small and mid-market businesses. Enterprise-grade security without the Fortune 500 price tag.">
 <link rel="stylesheet" href="styles.css">
-<link rel="stylesheet" href="styles-3d.css">
 </head>
 <body>
 
@@ -47,8 +46,19 @@
 
 <!-- ===================== HERO ===================== -->
 <section class="hero">
-  <canvas class="hero-canvas" data-mode="hero" aria-hidden="true"></canvas>
-  <div class="hero-vignette" aria-hidden="true"></div>
+  <div class="hero-glow"></div>
+  <svg class="hero-chev" viewBox="0 0 400 460" fill="none" aria-hidden="true">
+    <path d="M40 40 L40 250 L200 420 L360 250 L360 40" stroke="url(#hg)" stroke-width="1.5" opacity="0.5"/>
+    <path d="M90 220 L200 330 L310 220" stroke="url(#hg2)" stroke-width="2"/>
+    <defs>
+      <linearGradient id="hg" x1="0" y1="0" x2="1" y2="1">
+        <stop stop-color="#e01e37" stop-opacity="0.7"/><stop offset="1" stop-color="#e01e37" stop-opacity="0"/>
+      </linearGradient>
+      <linearGradient id="hg2" x1="0" y1="0" x2="1" y2="0">
+        <stop stop-color="#e8b24a" stop-opacity="0"/><stop offset=".5" stop-color="#e8b24a"/><stop offset="1" stop-color="#e8b24a" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+  </svg>
 
   <div class="container hero-inner">
     <div class="hero-copy">
@@ -67,11 +77,41 @@
         <span>Led by a former Fortune&nbsp;500 CISO &amp; USMC Veteran</span>
       </div>
     </div>
-  </div>
 
-  <div class="hero-scrollcue" aria-hidden="true">
-    <span>Scroll</span>
-    <span class="cue-rail"></span>
+    <!-- posture panel -->
+    <div class="hero-panel reveal d3" aria-hidden="true">
+      <div class="hp-head">
+        <span class="hp-title">SECURITY&nbsp;POSTURE</span>
+        <span class="hp-live"><span class="dot red"></span>MONITORING</span>
+      </div>
+      <div class="hp-scan"></div>
+      <div class="hp-rows">
+        <div class="hp-row">
+          <div class="hp-label">Attack Surface</div>
+          <div class="hp-bar"><span style="width:84%"></span></div>
+          <div class="hp-val">MAPPED</div>
+        </div>
+        <div class="hp-row">
+          <div class="hp-label">Compliance</div>
+          <div class="hp-bar"><span style="width:72%"></span></div>
+          <div class="hp-val gold">NIST&nbsp;CSF</div>
+        </div>
+        <div class="hp-row">
+          <div class="hp-label">Cyber Insurance</div>
+          <div class="hp-bar"><span style="width:91%"></span></div>
+          <div class="hp-val gold">READY</div>
+        </div>
+        <div class="hp-row">
+          <div class="hp-label">Incident Plan</div>
+          <div class="hp-bar"><span style="width:100%"></span></div>
+          <div class="hp-val">ACTIVE</div>
+        </div>
+      </div>
+      <div class="hp-foot">
+        <div><span class="hp-k">EXPOSURE</span><span class="hp-v">$2.4M → $310K</span></div>
+        <div><span class="hp-k">RISK SCORE</span><span class="hp-v gold">B+ ↑</span></div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -485,9 +525,6 @@
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
-<script src="scene.js"></script>
-<script src="interactions-3d.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

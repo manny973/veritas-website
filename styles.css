@@ -322,6 +322,9 @@ h1,h2,h3,h4{ font-family:var(--font-display); font-weight:800; line-height:1.04;
   transition:color .2s, transform .2s;
 }
 .footer-col a:hover{ color:var(--gold); transform:translateX(3px); }
+/* footer CTA button must keep its button styling (not the plain footer-link rules) */
+.footer-col a.btn{ display:inline-flex; padding:15px 26px; color:#fff; }
+.footer-col a.btn:hover{ color:#fff; transform:translateY(-2px); }
 .footer-bottom{
   margin-top:56px; padding-top:28px;
   border-top:1px solid var(--line);

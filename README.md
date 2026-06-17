@@ -8,15 +8,21 @@ A complete marketing website. The pages are plain **HTML + one CSS file + one Ja
 
 ```
 veritas-website/
-├── index.html        → Home
+├── index.html        → Home (3D WebGL hero)
+├── index-classic.html→ Home (non-3D fallback version — optional)
 ├── services.html     → Services (all 9 offerings + partner network)
 ├── about.html        → About Manny Engel
 ├── industries.html   → Industries We Serve
 ├── contact.html      → Contact / lead form
 ├── privacy.html      → Privacy Policy
 ├── contact.php       → Server-side form handler (sends via SMTP relay)
-├── styles.css        → All styling (shared by every page)
-├── script.js         → All interactivity (shared by every page)
+├── config.secret.example.php → Template for SMTP credentials (copy to config.secret.php on server)
+├── .gitignore        → Keeps config.secret.php (your live credentials) out of git
+├── styles.css        → Base styling (shared by every page)
+├── styles-3d.css     → 3D layer styling (WebGL hero, tilt cards, depth)
+├── script.js         → Core interactivity (nav, form, reveals)
+├── scene.js          → WebGL 3D scene (Three.js — shield + particle field)
+├── interactions-3d.js→ 3D card tilt + scene boot + hero parallax
 ├── assets/
 │   ├── veritas-logo-horizontal.png
 │   ├── veritas-logo-stacked.png
@@ -66,18 +72,14 @@ The "Request a consult" form on **contact.html** submits over AJAX (no page relo
 **Step 1 — Create a sending mailbox.**
 In Hostinger → **Emails → Email Accounts**, create a mailbox such as `noreply@veritascybersec.com` (or use an existing one). Note its **password**. Using a real mailbox on your own domain as the "From" address is what makes messages pass SPF/DKIM and land in the inbox rather than spam. The visitor's address is set as **Reply-To**, so hitting "reply" answers the lead directly.
 
-**Step 2 — Fill in SMTP credentials in `contact.php`.**
-Open `contact.php` and edit the `$CONFIG` block at the top:
-```php
-'to'          => 'info@veritascybersec.com',   // where leads are delivered
-'from'        => 'noreply@veritascybersec.com', // a real mailbox on your domain
-'smtp_host'   => 'smtp.hostinger.com',
-'smtp_user'   => 'noreply@veritascybersec.com', // full mailbox address
-'smtp_pass'   => 'PUT-MAILBOX-PASSWORD-HERE',    // <-- set this
-'smtp_port'   => 465,                            // 465 = SSL (recommended)
-'smtp_secure' => 'ssl',                          // 'ssl' for 465, 'tls' for 587
+**Step 2 — Put your SMTP credentials in `config.secret.php` (NOT in git).**
+Credentials live in a separate, git-ignored file so a future `git push` / deploy can **never** overwrite them and silently break email. On the **server**, one time:
+```bash
+cp config.secret.example.php config.secret.php
 ```
-(Confirm the exact SMTP host/port for the account under Hostinger → **Emails → … → Connect Devices / Configure Mail Client**.)
+Then edit `config.secret.php` and set your real `smtp_pass` (and `smtp_user` / `from` if they differ). `contact.php` automatically merges these over its defaults. Because `config.secret.php` is in `.gitignore`, it stays put across every deploy. The non-secret defaults (to/from address, SMTP host, port) live in the `$CONFIG` block at the top of `contact.php`.
+
+> **This is the key to "will pushing to my server break email?" → No.** As long as `config.secret.php` exists on the server (created once, never tracked by git), email keeps working through every future push.
 
 **Step 3 — Add the PHPMailer library** (gives you authenticated SMTP; strongly recommended).
 - **Easiest (Composer):** in the site folder run `composer require phpmailer/phpmailer`. This creates a `vendor/` folder — upload it alongside `contact.php`. Done.
@@ -116,6 +118,18 @@ If you ever move to a static-only host, point the form at a hosted form service 
 - **Scheduling link referenced:** calendly.com/veritascyber/30min
 
 Update these in the page footers and on `contact.html` if anything changes. (A quick find-and-replace across the `.html` files is the fastest way.)
+
+---
+
+## 6. The 3D layer (WebGL)
+
+The homepage hero features a real-time 3D Veritas shield with a particle field, and cards across the site have subtle mouse-reactive 3D tilt.
+
+- **Library:** Three.js r128, loaded from CDN (`<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js">`). Needs internet — standard for any hosted site. To self-host, download that file and point the tag at a local copy.
+- **Files:** `scene.js` (the 3D scene), `interactions-3d.js` (boot + tilt + parallax), `styles-3d.css` (layout/canvas styling).
+- **Graceful degradation:** if WebGL is unavailable (very old device, GPU disabled), the hero automatically falls back to a styled static gradient — no blank screen. Animations also respect "reduce motion" OS settings.
+- **Performance:** the render loop pauses when the tab is hidden, caps pixel ratio, and auto-frames the shield to any screen size (desktop, tablet, mobile portrait).
+- **Prefer the non-3D version?** `index-classic.html` is the earlier, lighter homepage with no WebGL. To use it instead, rename it to `index.html` (and rename the 3D one to keep a copy).
 
 ---
 
